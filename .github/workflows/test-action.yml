@@ -13,7 +13,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     runs-on: ubuntu-16.04
-    if: github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url)
+    if: github.event_name == 'push' || github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url
     steps:
       - name: Dump GitHub context
         env:
@@ -23,14 +23,21 @@ jobs:
         run: |
           echo "isfork: ${{ github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url }}"
           echo "ispush: ${{ github.event_name == 'push' }}"
-          echo "shouldrun: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url) }}"
+          echo "shouldrun: ${{ github.event_name == 'push' || github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url }}"
       - name: dump secret
         run: |
           echo secret:
           echo "${{ secrets.NOT_REALLY_SECRET }}"
           echo secret length:
           echo "${{ secrets.NOT_REALLY_SECRET }}" | wc -c
-      - uses: actions/checkout@v1
+      - name: checkout default repo on push
+        uses: actions/checkout@v2
+        if: github.event_name == 'push'
+      - name: checkout head repo on pull request
+        uses: actions/checkout@v2
+        if: github.event_name == 'pull_request_target'
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
       - name: Dump readme content
         run: cat README.md
       - name: Dump job context

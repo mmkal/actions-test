@@ -30,6 +30,9 @@ jobs:
           echo "${{ secrets.NOT_REALLY_SECRET }}"
           echo secret length:
           echo "${{ secrets.NOT_REALLY_SECRET }}" | wc -c
+      - uses: actions/checkout@v1
+      - name: Dump readme content
+        run: cat README.md
       - name: Dump job context
         env:
           JOB_CONTEXT: ${{ toJson(job) }}

@@ -35,7 +35,7 @@ jobs:
 
           if [ -z "$GIT_STATUS" ]; then
             echo "no changes made"
-          elif [ -n "${{ secrets.GH_CI_TOKEN }}" ]
+          elif [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
             echo "Attempting to push a commit to your branch. If this fails, try running the following command locally, committing the changes and pushing manually:"
             echo "$APPLY_PATCH_COMMAND"
 

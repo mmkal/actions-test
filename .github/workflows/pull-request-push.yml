@@ -36,7 +36,7 @@ jobs:
           echo "::set-env name=APPLY_PATCH_COMMAND::$APPLY_PATCH_COMMAND"
 
       - name: push changes
-        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url
+        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
         run: |
           echo "Attempting to push a commit to your branch. If this fails, try running the following command locally, committing the changes and pushing manually:"
           echo "$APPLY_PATCH_COMMAND"
@@ -55,7 +55,7 @@ jobs:
           echo "::set-env name=COMMENT_BODY::$COMMENT_BODY"
       
       - name: set manual file creation comment
-        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
+        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url
         run: |
           BACKTICKS='```'
           COMMENT_BODY="@${{ github.actor }} - there are changes which need to be pushed to your branch."

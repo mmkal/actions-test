@@ -32,13 +32,13 @@ jobs:
           echo "${{ secrets.NOT_REALLY_SECRET }}" | wc -c
       - name: checkout default repo on push
         uses: actions/checkout@v2
-      #   if: github.event_name == 'push'
-      # - name: checkout head repo on pull request
-      #   uses: actions/checkout@v2
-      #   if: github.event_name == 'pull_request'
-      #   with:
-      #     repository: ${{ github.event.pull_request.head.repo.full_name }}
-      #     ref: ${{ github.head_ref }}
+        if: github.event_name == 'push'
+      - name: checkout head repo on pull request
+        uses: actions/checkout@v2
+        if: github.event_name == 'pull_request'
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
       - name: Dump readme content
         run: cat README.md
       - run: |

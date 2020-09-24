@@ -21,35 +21,61 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
 
-      - name: push changes
+      - name: crupdate pr file
         run: |
           echo "${{ github.event.pull_request.title }}" > pr-plain-${{ github.event.pull_request.number }}.txt
 
           GIT_STATUS=$(git status --porcelain)
 
           git add -A
+
           DIFF_BASE64=$(git diff --cached | base64 -w 0)
           APPLY_PATCH_COMMAND="echo $DIFF_BASE64 | base64 --decode | git apply"
+          
+          echo "::set-env name=GIT_STATUS::$GIT_STATUS"
+          echo "::set-env name=APPLY_PATCH_COMMAND::$APPLY_PATCH_COMMAND"
 
-          if [ -z "$GIT_STATUS" ]; then
-            echo "no changes made"
-          elif [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
-            echo "Attempting to push a commit to your branch. If this fails, try running the following command locally, committing the changes and pushing manually:"
-            echo "$APPLY_PATCH_COMMAND"
+      - name: push changes
+        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url
+        run: |
+          echo "Attempting to push a commit to your branch. If this fails, try running the following command locally, committing the changes and pushing manually:"
+          echo "$APPLY_PATCH_COMMAND"
 
-            git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-            git config --global user.name "${{ github.actor }}"
-            git checkout ${{ github.head_ref }}
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git checkout ${{ github.head_ref }}
 
-            git commit -m "chore: txt file from pull_request event"
+          git commit -m "chore: txt file from pull_request event"
 
-            remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
-            git push "${remote_repo}"
+          remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
+          git push "${remote_repo}"
 
-            echo "::set-env name=CHANGE_HASH::$(git rev-parse --short HEAD)"
-          else
-            echo "changes were made, but can't push to the branch from this context"
-            echo "run the following command locally from a bash-like shell, the commit and push the changes it generates to your branch"
-            echo "$APPLY_PATCH_COMMAND"
-            exit 1
-          fi
+          CHANGE_HASH=$(git rev-parse --short HEAD)
+          COMMENT_BODY="@${{ github.actor }} - changes were pushed to your branch: $CHANGE_HASH."
+          echo "::set-env name=COMMENT_BODY::$COMMENT_BODY"
+      
+      - name: set manual file creation comment
+        if: env.GIT_STATUS != '' && github.event.pull_request.base.repo.url == github.event.pull_request.head.repo.url
+        run: |
+          BACKTICKS='```'
+          COMMENT_BODY="@${{ github.actor }} - there are changes which need to be pushed to your branch."
+          COMMENT_BODY="$COMMENT_BODY\n\nYou can run the following command locally to create the necessary changes, then commit and push them:"
+          COMMENT_BODY="$COMMENT_BODY\n\n$BACKTICKS\n$APPLY_PATCH_COMMAND\n$BACKTICKS"
+          COMMENT_BODY="$COMMENT_BODY\n\nOr you can use the GitHub UI to apply the changes:"
+          COMMENT_BODY="$COMMENT_BODY\n\n${BACKTICKS}patch\n$(git diff --cached)\n$BACKTICKS"
+          
+          echo "::set-env name=COMMENT_BODY::$COMMENT_BODY"
+
+          printf "Failing. Will attempt to comment with the following info:\n\n$COMMENT_BODY"
+          exit 1
+      - name: comment
+        uses: actions/github-script@v3
+        if: env.COMMENT_BODY != '' && always()
+        with:
+          script: |
+            github.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              body: process.env.COMMENT_BODY,
+            })

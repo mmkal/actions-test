@@ -22,6 +22,7 @@ jobs:
         run: |
           echo "isfork: ${{ github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url }}"
           echo "ispush: ${{ github.event_name == 'push' }}"
+          echo "shouldrun: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url) }}"
       - name: dump secret
         run: |
           echo secret:

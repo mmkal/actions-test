@@ -13,6 +13,7 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     runs-on: ubuntu-16.04
+    if: github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url)
     steps:
       - name: Dump GitHub context
         env:

@@ -25,7 +25,7 @@ jobs:
 
       - name: push changes
         run: |
-          echo "pr-${{ github.event.pull_request.title }}" > pr-${{ github.event.pull_request.number }}.txt
+          echo "${{ github.event.pull_request.title }}" > pr-${{ github.event.pull_request.number }}.txt
 
           GIT_STATUS=$(git status --porcelain)
 

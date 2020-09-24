@@ -45,7 +45,7 @@ jobs:
 
             git commit -m "chore: change files"
 
-            remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
+            remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
             git push "${remote_repo}"
 
             echo "::set-env name=CHANGE_HASH::$(git rev-parse --short HEAD)"

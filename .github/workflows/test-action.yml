@@ -38,6 +38,7 @@ jobs:
         if: github.event_name == 'pull_request_target'
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
       - name: Dump readme content
         run: cat README.md
       - name: Dump job context

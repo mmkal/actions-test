@@ -18,6 +18,17 @@ jobs:
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
         run: echo "$GITHUB_CONTEXT"
+      - name: dump conditions
+        run: |
+          echo "isfork: ${{ github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url }}"
+          echo "ispush: ${{ github.event_name == 'push' }}"
+          echo "shouldrun: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.base.repo.url != github.event.pull_request.head.repo.url) }}"
+      - name: dump secret
+        run: |
+          echo secret:
+          echo "${{ secrets.NOT_REALLY_SECRET }}"
+          echo secret length:
+          echo "${{ secrets.NOT_REALLY_SECRET }}" | wc -c
       - name: Dump job context
         env:
           JOB_CONTEXT: ${{ toJson(job) }}

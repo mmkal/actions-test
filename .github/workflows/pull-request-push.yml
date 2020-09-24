@@ -1,0 +1,55 @@
+name: pr-push
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the main branch
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  run:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.head_ref }}
+
+      - name: push changes
+        run: |
+          echo "${{ github.event.pull_request.title }}" > pr-plain-${{ github.event.pull_request.number }}.txt
+
+          GIT_STATUS=$(git status --porcelain)
+
+          git add -A
+          DIFF_BASE64=$(git diff --cached | base64 -w 0)
+          APPLY_PATCH_COMMAND="echo $DIFF_BASE64 | base64 --decode | git apply"
+
+          if [ -z "$GIT_STATUS" ]; then
+            echo "no changes made"
+          elif [ -n "${{ secrets.GITHUB_TOKEN }}" ]; then
+            echo "Attempting to push a commit to your branch. If this fails, try running the following command locally, committing the changes and pushing manually:"
+            echo "$APPLY_PATCH_COMMAND"
+
+            git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+            git config --global user.name "${{ github.actor }}"
+            git checkout ${{ github.head_ref }}
+
+            git commit -m "chore: txt file from pull_request event"
+
+            remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
+            git push "${remote_repo}"
+
+            echo "::set-env name=CHANGE_HASH::$(git rev-parse --short HEAD)"
+          else
+            echo "changes were made, but can't push to the branch from this context"
+            echo "run the following command locally from a bash-like shell, the commit and push the changes it generates to your branch"
+            echo "$APPLY_PATCH_COMMAND"
+            exit 1
+          fi

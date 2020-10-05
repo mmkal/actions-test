@@ -20,6 +20,7 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
+          token: ${{ secrets.GH_CI_TOKEN }}
 
       - name: crupdate pr file
         run: |
@@ -47,8 +48,7 @@ jobs:
 
           git commit -m "chore: txt file from pull_request event"
 
-          remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
-          git push "${remote_repo}"
+          git push
 
           CHANGE_HASH=$(git rev-parse --short HEAD)
           COMMENT_BODY="@${{ github.actor }} - changes were pushed to your branch: $CHANGE_HASH."

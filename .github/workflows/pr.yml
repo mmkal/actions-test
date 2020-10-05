@@ -47,7 +47,7 @@ jobs:
 
           git commit -m "chore: txt file from pull_request event"
 
-          remote_repo="https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
+          remote_repo="https://mmkal:${{ secrets.GH_CI_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
           git push "${remote_repo}"
 
           CHANGE_HASH=$(git rev-parse --short HEAD)

@@ -20,7 +20,7 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.head_ref }}
-          token: ${{ secrets.GH_CI_TOKEN }}
+          token: ${{ secrets.GH_CI_TOKEN || github.token }}
 
       - name: crupdate pr file
         run: |

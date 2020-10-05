@@ -23,6 +23,7 @@ jobs:
 
       - name: crupdate pr file
         run: |
+          # does this work?
           echo "${{ github.event.pull_request.title }}" > pr-plain-${{ github.event.pull_request.number }}.txt
 
           GIT_STATUS=$(git status --porcelain)

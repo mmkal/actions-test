@@ -47,8 +47,9 @@ jobs:
 
           git commit -m "chore: txt file from pull_request event"
 
-          remote_repo="https://mmkal:${{ secrets.GH_CI_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
-          git push "${remote_repo}"
+          # remote_repo="https://mmkal:${{ secrets.GH_CI_TOKEN }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
+          # git push "${remote_repo}"
+          git push
 
           CHANGE_HASH=$(git rev-parse --short HEAD)
           COMMENT_BODY="@${{ github.actor }} - changes were pushed to your branch: $CHANGE_HASH."

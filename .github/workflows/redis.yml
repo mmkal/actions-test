@@ -13,6 +13,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+        ports:
+          # Maps port 6379 on service container to the host
+          - 6379:6379
 
     steps:
       - name: Check out repository code
@@ -23,7 +26,7 @@ jobs:
 
       - name: Connect to Redis
         run: |
-          echo 'var c = require("redis").createClient({host: "redis"}); c.ping((e, r) => {console.log({e, r}); process.exit(e?1:0)})' > redis.js
+          echo 'var c = require("redis").createClient(); c.ping((e, r) => {console.log({e, r}); process.exit(e?1:0)})' > redis.js
           node redis.js
         # env:
         #   # The hostname used to communicate with the Redis service container

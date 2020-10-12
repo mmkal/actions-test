@@ -1,0 +1,32 @@
+name: Build
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v2
+
+      - run: yarn init -y
+      - run: yarn add redis
+
+      - name: Connect to Redis
+        run: |
+          echo 'var c = require('redis').createClient(); c.ping((e, r) => {console.log({e, r}); process.exit(e?1:0)})' > redis.js
+          node redis.js
+        # env:
+        #   # The hostname used to communicate with the Redis service container
+        #   REDIS_HOST: redis
+        #   # The default Redis port
+        #   REDIS_PORT: 6379

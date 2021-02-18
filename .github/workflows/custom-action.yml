@@ -1,0 +1,16 @@
+
+name: custom-action
+
+on:
+  push: {}
+
+jobs:
+  build:
+    runs-on: ubuntu-16.04
+    steps:
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/hello-world-action

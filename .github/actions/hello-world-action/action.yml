@@ -22,3 +22,15 @@ runs:
       shell: bash
       # - run: ${{ github.action_path }}/goodbye.sh
       # shell: bash
+    - name: Set up node
+      uses: actions/setup-node@v1
+      with:
+        node-version: 12.x
+
+    - id: node_modules_cache
+      uses: actions/cache@v2
+      with:
+        path: README.md
+        key: ${{ runner.os }}-rush-node-modules-${{ env.cache_version }}-${{ hashFiles('.github/**') }}
+        restore-keys: |
+          ${{ runner.os }}-rush-node-modules-${{ env.cache_version }}-
